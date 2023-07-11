@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "492897097187",
+    "project_id": "mboacare-ee56c",
+    "storage_bucket": "mboacare-ee56c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:492897097187:android:814a205a9728c8e310fcd6",
+        "android_client_info": {
+          "package_name": "com.example.mboacare"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "492897097187-04mt553vbrgaoi4svd5s86kcd6s34mre.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.mboacare",
+            "certificate_hash": "3707018c2d3f87493b193f60558ea0cf6099796f"
+          }
+        },
+        {
+          "client_id": "492897097187-3dv0uv8qbpeqrg8re5o24uf18e32e4bk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDuN4zktntp0IusyxYsXZT-zTYk902IYIg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "492897097187-3dv0uv8qbpeqrg8re5o24uf18e32e4bk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
