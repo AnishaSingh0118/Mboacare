@@ -1,74 +1,119 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:mboacare/colors.dart';
-import 'package:mboacare/signUpPage.dart';
-import 'package:mboacare/dashboard.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'colors.dart';
+import 'dashboard.dart';
+import 'signUpPage.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key, required String title}) : super(key: key);
 
-  Future<void> googleLogin() async {
-    print("googleLogin method Called");
-    GoogleSignIn _googleSignIn = GoogleSignIn();
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email']);
+
+  bool _isLoggedIn = false; // Flag to indicate if the user is logged in
+
+  @override
+  void initState() {
+    super.initState();
+    _checkUserStatus();
+  }
+
+  Future<void> _signIn(BuildContext context) async {
     try {
-      var result = await _googleSignIn.signIn();
-      if (result == null) {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
         return;
       }
-      print("Result $result");
-      print(result.displayName);
-      print(result.email);
-      print(result.photoUrl);
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final UserCredential userCredential =
+          await _auth.signInWithCredential(credential);
+      final User? user = userCredential.user;
+
+      if (user != null) {
+        _isLoggedIn =
+            true; // Set the flag to indicate that the user is logged in
+        // Clear the saved sign-in status as we are using Google sign-in
+        _saveSignInStatus(false);
+        // Navigate to the dashboard
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => Dashboard(userName: user.displayName ?? ""),
+          ),
+        );
+      }
     } catch (error) {
       print(error);
     }
   }
 
-  Future<void> signInWithEmail(BuildContext context) async {
-    try {
-      // Perform user verification here
-      // For example, you can use Firebase Authentication to verify the user's email and password
+  // Method to save sign-in status to SharedPreferences
+  Future<void> _saveSignInStatus(bool isSignedIn) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool('isSignedIn', isSignedIn);
+  }
 
-      // Simulating a successful verification
-      bool isUserVerified = true;
+  Future<void> _checkUserStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool isSignedIn = prefs.getBool('isSignedIn') ?? false;
 
-      if (isUserVerified) {
-        // Redirect to the main screen if the user is verified
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => Dashboard()));
-      }
-    } catch (error) {
-      // Handle any potential errors during user verification
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Error'),
-            content: Text('An error occurred during user verification: $error'),
-            actions: [
-              TextButton(
-                child: Text('OK'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
+    setState(() {
+      _isLoggedIn = isSignedIn;
+    });
+  }
+
+  void _redirectToDashboard(BuildContext context) {
+    // If the user is logged in, navigate to the dashboard
+    if (_isLoggedIn) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Dashboard(
+              userName:
+                  "John Doe"), // Replace "John Doe" with the actual user name
+        ),
       );
     }
   }
 
-  Future<void> logout() async {
-    await GoogleSignIn().disconnect();
-    FirebaseAuth.instance.signOut();
+  void _showErrorMessage(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Google Login')),
+      appBar: AppBar(title: Text('Login')),
       body: SingleChildScrollView(
         child: Container(
           alignment: Alignment.topCenter,
@@ -104,7 +149,7 @@ class LoginScreen extends StatelessWidget {
                 width: 320,
                 height: 40,
                 child: ElevatedButton(
-                  onPressed: () => signInWithEmail(context),
+                  onPressed: () => _signIn(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.buttonColor,
                     shape: RoundedRectangleBorder(
@@ -112,7 +157,7 @@ class LoginScreen extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    'Sign in',
+                    'Sign In',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -124,19 +169,26 @@ class LoginScreen extends StatelessWidget {
               Container(
                 width: 320,
                 height: 40,
-                child: FloatingActionButton.extended(
-                  onPressed: googleLogin,
-                  backgroundColor: Colors.white,
-                  foregroundColor: AppColors.googleButtonTextColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                child: ElevatedButton.icon(
+                  onPressed: () => _signIn(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    primary: AppColors.primaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                   icon: Image.asset(
                     'lib/assests/images/google-icon.png',
                     height: 32,
                     width: 32,
                   ),
-                  label: Text('Sign in with Google'),
+                  label: Text(
+                    'Sign in with Google',
+                    style: TextStyle(
+                      color: AppColors.primaryColor,
+                    ),
+                  ),
                 ),
               ),
               SizedBox(height: 16),

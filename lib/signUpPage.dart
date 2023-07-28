@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'colors.dart';
+import 'dashboard.dart';
+import "package:shared_preferences/shared_preferences.dart"; // Import the shared_preferences package
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({Key? key});
@@ -24,12 +26,25 @@ class _SignUpPageState extends State<SignUpPage> {
         password: _passwordController.text,
       );
       final User? user = userCredential.user;
-      // Registration successful
-      setState(() {
-        _registrationStatus = 'Registration successful';
-      });
+
+      if (user != null) {
+        // Save the user's name to the Firebase user profile
+        await user.updateDisplayName(
+            "John Doe"); // Replace "John Doe" with the user's actual name
+
+        setState(() {
+          _registrationStatus = 'Registration successful';
+        });
+
+        // Redirect to the dashboard
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) =>
+                  Dashboard(userName: user.displayName ?? "")),
+        );
+      }
     } catch (e) {
-      print(e.toString()); // Print the exact error message
       // Registration failed
       setState(() {
         _registrationStatus = 'Registration failed: ${e.toString()}';
@@ -52,11 +67,25 @@ class _SignUpPageState extends State<SignUpPage> {
       var finalResult =
           await FirebaseAuth.instance.signInWithCredential(credential);
       final User? user = finalResult.user;
-      // Do something with the authenticated user
-      print("Result $result");
-      print(result.displayName);
-      print(result.email);
-      print(result.photoUrl);
+
+      if (user != null) {
+        setState(() {
+          _registrationStatus = 'Google sign-in successful';
+        });
+
+        // Save the sign-in status and email in SharedPreferences
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        prefs.setBool('isSignedIn', true);
+        prefs.setString('email', user.email ?? "");
+
+        // Redirect to the dashboard
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) =>
+                  Dashboard(userName: user.displayName ?? "")),
+        );
+      }
     } catch (error) {
       print(error);
     }
