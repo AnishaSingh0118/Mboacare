@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'colors.dart';
 import 'login.dart';
+import 'dashboard.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -9,12 +10,12 @@ class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     _navigateToHome() async {
-      await Future.delayed(Duration(milliseconds: 1500), () {});
+      await Future.delayed(Duration(milliseconds: 3000), () {});
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
           transitionDuration: Duration(milliseconds: 500),
-          pageBuilder: (_, __, ___) => const LoginScreen(title: 'Mboacare'),
+          pageBuilder: (_, __, ___) => DashboardScreen(userName: 'Mboacare'),
           transitionsBuilder: (_, animation, __, child) {
             return FadeTransition(
               opacity: animation,

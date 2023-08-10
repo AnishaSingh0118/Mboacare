@@ -1,11 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:mboacare/splash.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
+import 'hospital_provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'locale_provider.dart';
+import 'l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(const MyApp());
+
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (_) => HospitalProvider()),
+      ChangeNotifierProvider(create: (_) => LocaleProvider()),
+      // Add other providers here if needed.
+    ],
+    child: MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -35,6 +48,28 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
+      // Add supported locales and localizations delegates
+      supportedLocales: [
+        Locale('en', 'US'), // English
+        Locale('hi', 'IN'), // Hindi
+        Locale('es', 'ES'), // Spanish
+        Locale('fr', 'FR'), // French
+        // Add more locales here for other languages
+      ],
+      localizationsDelegates: [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      localeResolutionCallback: (locale, supportedLocales) {
+        for (var supportedLocale in supportedLocales) {
+          if (supportedLocale.languageCode == locale?.languageCode &&
+              supportedLocale.countryCode == locale?.countryCode) {
+            return supportedLocale;
+          }
+        }
+        return supportedLocales.first;
+      },
       home: SplashScreen(),
     ); //MaterialApp
   }
