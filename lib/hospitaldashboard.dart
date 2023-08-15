@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:mboacare/chip_widget.dart';
+import 'package:mboacare/hospitaldetails.dart';
 import 'package:provider/provider.dart';
 import 'hospital_model.dart';
 import 'hospital_provider.dart';
@@ -16,6 +18,7 @@ class _HospitalDashboardState extends State<HospitalDashboard> {
   TextEditingController _searchController = TextEditingController();
   String _selectedFilter = 'View All'; // Initialize with 'View All'
   String _selectedDropdownFilter = 'View All'; // Initialize with 'View All'
+  late List<HospitalData> filteredHospitals;
 
   @override
   void dispose() {
@@ -64,17 +67,27 @@ class _HospitalDashboardState extends State<HospitalDashboard> {
                 },
                 decoration: InputDecoration(
                   labelText: 'Search Hospitals',
-                  labelStyle: TextStyle(color: AppColors.primaryColor),
-                  prefixIcon: Icon(Icons.search, color: AppColors.primaryColor),
+                  labelStyle: const TextStyle(color: AppColors.primaryColor),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10.0),
-                    borderSide: BorderSide(
+                    borderSide: const BorderSide(
                       color: AppColors.primaryColor,
                       width: 2.0,
                     ),
+                  ),
+                  suffixIcon: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Icon(
+                      Icons.search,
+                      color: AppColors.primaryColor,
+                    ),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    vertical: 12.0,
+                    horizontal: 12.0,
                   ),
                 ),
               ),
@@ -85,14 +98,17 @@ class _HospitalDashboardState extends State<HospitalDashboard> {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   _buildFilterTab('View All'),
-                  _buildFilterTab('General Medicine'),
                   _buildFilterTab('Surgery'),
+                  _buildFilterTab('Paediatrics'),
+                  _buildFilterTab('Internal Medicine'),
+                  _buildFilterTab('Obstetrics & Gynaecology'),
                   _buildFilterTab('Cardiology'),
+                  _buildFilterTab('Oncology'),
                   _buildFilterTab('Neurology'),
                 ],
               ),
@@ -109,20 +125,29 @@ class _HospitalDashboardState extends State<HospitalDashboard> {
                   _selectedDropdownFilter = newValue!;
                   _selectedFilter =
                       newValue!; // Set the filter tab value based on dropdown selection
+                  hospitalProvider.setSelectedFilter(_selectedFilter);
+                  Future.delayed(const Duration(milliseconds: 500)).then((_) {
+                    hospitalProvider
+                        .updateFilteredHospitalsDropdown(filteredHospitals);
+                    //hospitalProvider.filterHospitals(_selectedFilter);
+                  });
                 });
               },
               items: <String>[
                 'View All',
-                'General Medicine',
-                'Surgery',
-                'Cardiology',
-                'Neurology',
+                'Emergency Room',
+                'Laboratory',
+                'Radiology',
+                'Pharmacy',
+                'Intensive Care Unit',
+                'Operating Room',
+                'Blood Bank',
               ].map<DropdownMenuItem<String>>((String value) {
                 return DropdownMenuItem<String>(
                   value: value,
                   child: Text(
                     value,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: AppColors.primaryColor,
                     ),
                   ),
@@ -137,25 +162,24 @@ class _HospitalDashboardState extends State<HospitalDashboard> {
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   // Apply filtering based on selected filter tab and search query
-                  List<HospitalData> filteredHospitals =
-                      hospitalProvider.applyFilters(
+                  filteredHospitals = hospitalProvider.applyFilters(
                     snapshot.data!,
                     _searchController.text,
                     _selectedFilter,
                   );
 
                   // Update the _filteredHospitals list with the latest data
-                  hospitalProvider.updateFilteredHospitals(filteredHospitals);
+                  //hospitalProvider.updateFilteredHospitals(filteredHospitals);
 
                   return ListView.builder(
                     itemCount: hospitalProvider.filteredHospitals.length,
                     itemBuilder: (context, index) {
-                      var hospital = hospitalProvider.filteredHospitals[index];
-
+                      // var hospital = hospitalProvider.hospitals[index];
+                      // print(hospital.hospitalImageUrl);
                       return Container(
                         margin: const EdgeInsets.only(bottom: 16.0),
                         padding: const EdgeInsets.all(16.0),
-                        height: 300,
+                        height: 350,
                         child: Card(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16.0),
@@ -166,19 +190,23 @@ class _HospitalDashboardState extends State<HospitalDashboard> {
                             children: [
                               // Hospital Image
                               Container(
-                                height: 140,
+                                height: 125,
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.only(
+                                  borderRadius: const BorderRadius.only(
                                     topLeft: Radius.circular(16.0),
                                     topRight: Radius.circular(16.0),
                                   ),
-                                  image: hospital.hospitalImageUrl != null
+                                  image: hospitalProvider
+                                              .filteredHospitals[index]
+                                              .hospitalImageUrl !=
+                                          ''
                                       ? DecorationImage(
                                           fit: BoxFit.cover,
-                                          image: FileImage(
-                                              File(hospital.hospitalImageUrl!)),
+                                          image: NetworkImage(hospitalProvider
+                                              .filteredHospitals[index]
+                                              .hospitalImageUrl),
                                         )
-                                      : DecorationImage(
+                                      : const DecorationImage(
                                           fit: BoxFit.cover,
                                           image: AssetImage(
                                               'lib/assests/images/placeholder_image.png'),
@@ -186,8 +214,8 @@ class _HospitalDashboardState extends State<HospitalDashboard> {
                                 ),
                               ),
 
-                              SizedBox(
-                                height: 8,
+                              const SizedBox(
+                                height: 2,
                               ),
 
                               // Display Hospital Name with Right Arrow Button
@@ -196,10 +224,12 @@ class _HospitalDashboardState extends State<HospitalDashboard> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Padding(
-                                    padding: const EdgeInsets.only(left: 10.0),
+                                    padding: const EdgeInsets.only(left: 14.0),
                                     child: Text(
-                                      hospital.hospitalName.toUpperCase(),
-                                      style: TextStyle(
+                                      hospitalProvider
+                                          .filteredHospitals[index].hospitalName
+                                          .toUpperCase(),
+                                      style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
                                         color: AppColors.textColor2,
@@ -208,14 +238,30 @@ class _HospitalDashboardState extends State<HospitalDashboard> {
                                   ),
                                   ElevatedButton(
                                     onPressed: () {
-                                      if (hospital.hospitalWebsite != null &&
-                                          hospital
-                                              .hospitalWebsite!.isNotEmpty) {
-                                        WidgetsBinding.instance!
-                                            .addPostFrameCallback((_) {
-                                          _launchURL(hospital.hospitalWebsite!);
-                                        });
-                                      }
+                                      // if (hospitalProvider
+                                      //             .filteredHospitals[index]
+                                      //             .hospitalWebsite !=
+                                      //         null &&
+                                      //     hospitalProvider
+                                      //         .filteredHospitals[index]
+                                      //         .hospitalWebsite!
+                                      //         .isNotEmpty) {
+                                      //   WidgetsBinding.instance!
+                                      //       .addPostFrameCallback((_) {
+                                      //     _launchURL(hospitalProvider
+                                      //         .filteredHospitals[index]
+                                      //         .hospitalWebsite!);
+                                      //   });
+                                      // }
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (_) =>
+                                                  HospitalDetailsPage(
+                                                    hospital: hospitalProvider
+                                                            .filteredHospitals[
+                                                        index],
+                                                  )));
                                     },
                                     style: ElevatedButton.styleFrom(
                                       primary: AppColors.buttonColor,
@@ -224,7 +270,7 @@ class _HospitalDashboardState extends State<HospitalDashboard> {
                                             BorderRadius.circular(10.0),
                                       ),
                                     ),
-                                    child: Icon(
+                                    child: const Icon(
                                       Icons.arrow_forward,
                                       color: Colors.white,
                                     ),
@@ -232,54 +278,35 @@ class _HospitalDashboardState extends State<HospitalDashboard> {
                                 ],
                               ),
 
-                              SizedBox(height: 1),
+                              const SizedBox(height: 1),
 
                               // Display Hospital Address
                               Padding(
-                                padding: const EdgeInsets.only(left: 10.0),
+                                padding: const EdgeInsets.only(left: 14.0),
                                 child: Text(
-                                  hospital.hospitalAddress,
-                                  style: TextStyle(
+                                  hospitalProvider
+                                      .filteredHospitals[index].hospitalAddress,
+                                  style: const TextStyle(
                                     fontSize: 16,
                                     color: AppColors.textColor2,
                                   ),
                                 ),
                               ),
 
-                              SizedBox(height: 2),
+                              const SizedBox(height: 1),
 
                               // Display Hospital Specialities as Colorful Boxes
                               Padding(
                                 padding: const EdgeInsets.only(left: 8.0),
                                 child: Wrap(
-                                  spacing: 8.0,
-                                  runSpacing: 8.0,
-                                  children: hospital.hospitalSpecialities
+                                  spacing: 5.0,
+                                  runSpacing: 5.0,
+                                  children: hospitalProvider
+                                      .filteredHospitals[index]
+                                      .hospitalSpecialities
                                       .split(',')
                                       .map(
-                                        (speciality) => Container(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: 12.0,
-                                            vertical: 4.0,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color:
-                                                Colors.green.withOpacity(0.01),
-                                            borderRadius:
-                                                BorderRadius.circular(10.0),
-                                            border: Border.all(
-                                              color: Colors.green,
-                                              width: 1.5,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            speciality.trim(),
-                                            style: TextStyle(
-                                              color: Colors.black,
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                        ),
+                                        (speciality) => ChipWidget(speciality),
                                       )
                                       .toList(),
                                 ),
@@ -293,7 +320,7 @@ class _HospitalDashboardState extends State<HospitalDashboard> {
                     },
                   );
                 } else {
-                  return Center(
+                  return const Center(
                     child: CircularProgressIndicator(),
                   );
                 }
@@ -312,6 +339,9 @@ class _HospitalDashboardState extends State<HospitalDashboard> {
         setState(() {
           _selectedFilter = filterOption;
           hospitalProvider.setSelectedFilter(filterOption);
+          Future.delayed(const Duration(milliseconds: 500)).then((_) {
+            hospitalProvider.updateFilteredHospitals(filteredHospitals);
+          });
         });
       },
       child: Padding(

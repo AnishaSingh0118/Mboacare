@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +9,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'colors.dart';
 import 'hospital_provider.dart';
 import 'hospital_model.dart';
-
+import 'package:http/http.dart' as http;
 import 'hospitaldashboard.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -27,6 +28,80 @@ class _RegisterPageState extends State<RegisterPage> {
   String? _hospitalSize;
   String? _hospitalOwnership;
   String? _hospitalSpecialities;
+  String? _hospitalFacilities;
+  String? _hospitalBedCapacity;
+  String? _hospitalEmergencyServices;
+
+  final String documentId =
+      'aeac9fSTIeI6UD0OywSj'; // ID of the document to fetch
+  final String collectionName = 'sendgrid'; // Name of the collection
+  final String fieldName = 'apiKey'; // Name of the field to retrieve
+  String apiKeySG = '';
+
+  @override
+  void initState() {
+    super.initState();
+    fetchApiKey();
+  }
+
+  Future<void> fetchApiKey() async {
+    try {
+      DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+          .collection(collectionName)
+          .doc(documentId)
+          .get();
+      if (documentSnapshot.exists) {
+        apiKeySG = documentSnapshot.get(fieldName);
+        print(apiKeySG);
+      } else {
+        print('Document not found');
+      }
+    } catch (error) {
+      print('Error fetching data: $error');
+    }
+  }
+
+  Future<void> sendRegisterSuccessEmail(String recipientEmail) async {
+    String apiKey = apiKeySG;
+    final Uri uri = Uri.https(
+      'api.sendgrid.com',
+      '/v3/mail/send',
+    );
+
+    final Map<String, dynamic> data = {
+      'personalizations': [
+        {
+          'to': [
+            {'email': recipientEmail},
+          ],
+          'subject': 'Welcome to Mboacare!',
+        },
+      ],
+      'from': {'email': 'mboacare@gmail.com'},
+      'content': [
+        {
+          'type': 'text/plain',
+          'value':
+              'Thank you for registering your hospital! We will get back in touch after review.'
+        },
+      ],
+    };
+
+    final response = await http.post(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $apiKey',
+      },
+      body: jsonEncode(data),
+    );
+
+    if (response.statusCode == 202) {
+      print('Email sent successfully');
+    } else {
+      print('Failed to send email. Status code: ${response.statusCode}');
+    }
+  }
 
   ImagePicker _imagePicker = ImagePicker();
   File? _selectedImage;
@@ -41,11 +116,102 @@ class _RegisterPageState extends State<RegisterPage> {
     });
   }
 
+  List<ChecklistItem> checklistMedicalServices = [
+    ChecklistItem(title: 'Surgery', isChecked: false),
+    ChecklistItem(title: 'Paediatrics', isChecked: false),
+    ChecklistItem(title: 'Internal Medicine', isChecked: false),
+    ChecklistItem(title: 'Obstetrics & Gynaecology', isChecked: false),
+    ChecklistItem(title: 'Cardiology', isChecked: false),
+    ChecklistItem(title: 'Oncology', isChecked: false),
+    ChecklistItem(title: 'Neurology', isChecked: false),
+    ChecklistItem(title: 'Other', isChecked: false),
+  ];
+
+  void concatenateMedicalServices() {
+    String concatenatedItems = '';
+    for (var item in checklistMedicalServices) {
+      if (item.isChecked) {
+        concatenatedItems += '${item.title},';
+      }
+    }
+    if (concatenatedItems.isNotEmpty) {
+      concatenatedItems =
+          concatenatedItems.substring(0, concatenatedItems.length - 1);
+    }
+    _hospitalSpecialities = concatenatedItems;
+  }
+
+  List<ChecklistItem> checklistFacilities = [
+    ChecklistItem(title: 'Emergency Room', isChecked: false),
+    ChecklistItem(title: 'Laboratory', isChecked: false),
+    ChecklistItem(title: 'Radiology', isChecked: false),
+    ChecklistItem(title: 'Pharmacy', isChecked: false),
+    ChecklistItem(title: 'Intensive Care Unit', isChecked: false),
+    ChecklistItem(title: 'Operation Room', isChecked: false),
+    ChecklistItem(title: 'Blood Bank', isChecked: false),
+    ChecklistItem(title: 'Other', isChecked: false),
+  ];
+
+  void concatenateFacilities() {
+    String concatenatedItems = '';
+    for (var item in checklistFacilities) {
+      if (item.isChecked) {
+        concatenatedItems += '${item.title},';
+      }
+    }
+    if (concatenatedItems.isNotEmpty) {
+      concatenatedItems =
+          concatenatedItems.substring(0, concatenatedItems.length - 1);
+    }
+    _hospitalFacilities = concatenatedItems;
+  }
+
+  List<ChecklistItem> checklistEmergencyService = [
+    ChecklistItem(title: 'Ambulance', isChecked: false),
+    ChecklistItem(title: '24/7 Emergency Room', isChecked: false),
+    ChecklistItem(title: 'Other', isChecked: false),
+  ];
+
+  void concatenateEmergencyService() {
+    String concatenatedItems = '';
+    for (var item in checklistEmergencyService) {
+      if (item.isChecked) {
+        concatenatedItems += '${item.title},';
+      }
+    }
+    if (concatenatedItems.isNotEmpty) {
+      concatenatedItems =
+          concatenatedItems.substring(0, concatenatedItems.length - 1);
+    }
+    _hospitalEmergencyServices = concatenatedItems;
+  }
+
+  void _setOtherValue(String name, String value) {
+    setState(() {
+      switch (name) {
+        case 'hospitalType':
+          _hospitalType = value;
+          break;
+        case 'hospitalSize':
+          _hospitalSize = value;
+          break;
+        case 'hospitalOwnership':
+          _hospitalOwnership = value;
+          break;
+        case 'hospitalBedCapacity':
+          _hospitalBedCapacity = value;
+          break;
+        default:
+          break;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Hospital Sign Up'),
+        title: const Text('Hospital Sign Up'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -62,7 +228,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const Text(
                           'Hospital Name *',
                           style: TextStyle(
                             fontSize: 16,
@@ -70,7 +236,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                         ),
                         TextFormField(
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             hintText: 'Enter hospital name',
                             border: UnderlineInputBorder(
                               borderSide: BorderSide(
@@ -102,7 +268,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const Text(
                           'Hospital Address *',
                           style: TextStyle(
                             fontSize: 16,
@@ -110,7 +276,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                         ),
                         TextFormField(
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             hintText: 'Enter hospital address',
                             border: UnderlineInputBorder(
                               borderSide: BorderSide(
@@ -142,7 +308,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const Text(
                           'Hospital Phone Number *',
                           style: TextStyle(
                             fontSize: 16,
@@ -150,7 +316,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                         ),
                         TextFormField(
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             hintText: 'Enter phone number',
                             border: UnderlineInputBorder(
                               borderSide: BorderSide(
@@ -182,7 +348,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const Text(
                           'Hospital Email Address',
                           style: TextStyle(
                             fontSize: 16,
@@ -190,7 +356,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                         ),
                         TextFormField(
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             hintText: 'Enter email address (optional)',
                             border: UnderlineInputBorder(
                               borderSide: BorderSide(
@@ -216,7 +382,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const Text(
                           'Hospital Website',
                           style: TextStyle(
                             fontSize: 16,
@@ -224,7 +390,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                         ),
                         TextFormField(
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             hintText: 'Enter website (optional)',
                             border: UnderlineInputBorder(
                               borderSide: BorderSide(
@@ -244,46 +410,172 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
 
                 // Specialities for the Hospitals
+                // Card(
+                //   child: Padding(
+                //     padding: const EdgeInsets.all(16.0),
+                //     child: Column(
+                //       crossAxisAlignment: CrossAxisAlignment.start,
+                //       children: [
+                //         const Text(
+                //           'Specialities for the Hospitals',
+                //           style: TextStyle(
+                //             fontSize: 16,
+                //             fontWeight: FontWeight.bold,
+                //           ),
+                //         ),
+                //         TextFormField(
+                //           decoration: const InputDecoration(
+                //             hintText: 'Enter hospital specialities',
+                //             border: UnderlineInputBorder(
+                //               borderSide: BorderSide(
+                //                 color: Colors.black,
+                //                 width: 1.0,
+                //               ),
+                //             ),
+                //             isDense: true,
+                //             contentPadding:
+                //                 EdgeInsets.fromLTRB(0.0, 8.0, 12.0, 4.0),
+                //           ),
+                //           onSaved: (value) => _hospitalSpecialities = value,
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ),
+
                 Card(
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.all(16),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          'Specialities for the Hospitals',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                        const Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Medical Services Offered',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                        TextFormField(
-                          decoration: InputDecoration(
-                            hintText: 'Enter hospital specialities',
-                            border: UnderlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Colors.black,
-                                width: 1.0,
-                              ),
-                            ),
-                            isDense: true,
-                            contentPadding:
-                                EdgeInsets.fromLTRB(0.0, 8.0, 12.0, 4.0),
-                          ),
-                          onSaved: (value) => _hospitalSpecialities = value,
+                        ListView.builder(
+                          physics: const ClampingScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: checklistMedicalServices.length,
+                          itemBuilder: (context, index) {
+                            return CheckboxListTile(
+                              title:
+                                  Text(checklistMedicalServices[index].title),
+                              value: checklistMedicalServices[index].isChecked,
+                              onChanged: (value) {
+                                setState(() {
+                                  checklistMedicalServices[index].isChecked =
+                                      value!;
+                                });
+                              },
+                            );
+                          },
                         ),
                       ],
                     ),
                   ),
                 ),
 
-                SizedBox(height: 20),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Facilities Available',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        ListView.builder(
+                          physics: const ClampingScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: checklistFacilities.length,
+                          itemBuilder: (context, index) {
+                            return CheckboxListTile(
+                              title: Text(checklistFacilities[index].title),
+                              value: checklistFacilities[index].isChecked,
+                              onChanged: (value) {
+                                setState(() {
+                                  checklistFacilities[index].isChecked = value!;
+                                });
+                              },
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Emergency Services Available',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        ListView.builder(
+                          physics: const ClampingScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: checklistEmergencyService.length,
+                          itemBuilder: (context, index) {
+                            return CheckboxListTile(
+                              title:
+                                  Text(checklistEmergencyService[index].title),
+                              value: checklistEmergencyService[index].isChecked,
+                              onChanged: (value) {
+                                setState(() {
+                                  checklistEmergencyService[index].isChecked =
+                                      value!;
+                                });
+                              },
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // const SizedBox(height: 20),
+                // Radio buttons for  Hospital Bed Capacity
+                _buildChoiceChipForm(
+                  title: 'Bed Capacity *',
+                  name: 'hospitalBedCapacity',
+                  options: [
+                    'less than 50 Beds',
+                    '50-100 Beds',
+                    'more than 100 beds'
+                  ],
+                  onChanged: (value) => _hospitalBedCapacity = value,
+                ),
 
                 // Radio buttons for Hospital Type
                 _buildChoiceChipForm(
                   title: 'Hospital Type *',
                   name: 'hospitalType',
-                  options: ['Public', 'Private', 'Non-Profit'],
+                  options: ['Public', 'Private', 'Other'],
                   onChanged: (value) => _hospitalType = value,
                 ),
 
@@ -303,11 +595,11 @@ class _RegisterPageState extends State<RegisterPage> {
                   onChanged: (value) => _hospitalOwnership = value,
                 ),
 
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
 
                 TextButton(
                   onPressed: _pickImage,
-                  child: Text(
+                  child: const Text(
                     'Select Image (Optional)',
                     style: TextStyle(
                       color: Colors.blue,
@@ -322,23 +614,28 @@ class _RegisterPageState extends State<RegisterPage> {
                     height: 150,
                   ),
 
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
 
                 ElevatedButton(
                   onPressed: () {
-                    _submitForm();
+                    concatenateMedicalServices();
+                    concatenateFacilities();
+                    concatenateEmergencyService();
+                    Future.delayed(const Duration(seconds: 1)).then((_) {
+                      _submitForm();
+                    });
                   },
-                  child: Text(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.buttonColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
                     'Sign Up',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    primary: AppColors.buttonColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                 ),
@@ -357,6 +654,7 @@ class _RegisterPageState extends State<RegisterPage> {
     void Function(String)? onChanged,
   }) {
     String? selectedOption = _getSelectedOption(name);
+    bool showOtherInput = selectedOption == 'Other';
 
     return Card(
       child: Padding(
@@ -366,7 +664,7 @@ class _RegisterPageState extends State<RegisterPage> {
           children: [
             Text(
               title,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -386,8 +684,25 @@ class _RegisterPageState extends State<RegisterPage> {
                       });
                     },
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Text(option),
+                  if (option == 'Other')
+                    if (showOtherInput)
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: TextFormField(
+                            decoration: const InputDecoration(
+                              hintText: 'Enter other...',
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                _setOtherValue(name, value);
+                              });
+                            },
+                          ),
+                        ),
+                      ),
                 ],
               ),
             ),
@@ -405,6 +720,8 @@ class _RegisterPageState extends State<RegisterPage> {
         return _hospitalSize;
       case 'hospitalOwnership':
         return _hospitalOwnership;
+      case 'hospitalBedCapacity':
+        return _hospitalBedCapacity;
       default:
         return null;
     }
@@ -425,6 +742,9 @@ class _RegisterPageState extends State<RegisterPage> {
         'hospitalSize': _hospitalSize,
         'hospitalOwnership': _hospitalOwnership,
         'hospitalSpecialities': _hospitalSpecialities,
+        'hospitalFacilities': _hospitalFacilities,
+        'hospitalBedCapacity': _hospitalBedCapacity,
+        'hospitalEmergencyServices': _hospitalEmergencyServices
       };
 
       // CollectionReference for the hospitals collection in Cloud Firestore
@@ -434,25 +754,55 @@ class _RegisterPageState extends State<RegisterPage> {
       try {
         if (_selectedImage != null) {
           // Upload the selected image to Firebase Storage
+          //   final Reference storageReference = FirebaseStorage.instance
+          //       .ref()
+          //       .child(
+          //           'hospital_images/${DateTime.now().millisecondsSinceEpoch}');
+          //   final UploadTask uploadTask =
+          //       storageReference.putFile(_selectedImage!);
+          //   final TaskSnapshot storageTaskSnapshot =
+          //       await uploadTask.whenComplete(() {});
+          //   final String downloadUrl =
+          //       await storageTaskSnapshot.ref.getDownloadURL();
+          //   hospitalDataMap['hospitalImageUrl'] =
+          //       downloadUrl; // Add the download URL to the map
+          //               // Save hospital data to Cloud Firestore
+          // await _hospitalsRef.add(hospitalDataMap);
           final Reference storageReference = FirebaseStorage.instance
               .ref()
               .child(
                   'hospital_images/${DateTime.now().millisecondsSinceEpoch}');
+
           final UploadTask uploadTask =
               storageReference.putFile(_selectedImage!);
-          final TaskSnapshot storageTaskSnapshot =
-              await uploadTask.whenComplete(() {});
-          final String downloadUrl =
-              await storageTaskSnapshot.ref.getDownloadURL();
-          hospitalDataMap['hospitalImageUrl'] =
-              downloadUrl; // Add the download URL to the map
-        }
-        // Save hospital data to Cloud Firestore
-        await _hospitalsRef.add(hospitalDataMap);
+          TaskSnapshot storageTaskSnapshot = await uploadTask;
 
+          if (uploadTask.snapshot.state == TaskState.success) {
+            final String downloadUrl =
+                await storageTaskSnapshot.ref.getDownloadURL();
+            print("Download URL: $downloadUrl");
+
+            hospitalDataMap['hospitalImageUrl'] = downloadUrl;
+            // Add other data to hospitalDataMap
+
+            // Save hospital data to Cloud Firestore
+            await _hospitalsRef.add(hospitalDataMap);
+
+            print("Hospital data saved successfully.");
+          } else {
+            print("Image upload task failed.");
+          }
+        } else {
+          // Save hospital data to Cloud Firestore
+          hospitalDataMap['hospitalImageUrl'] = '';
+          await _hospitalsRef.add(hospitalDataMap);
+        }
+        if (_hospitalEmail!.isNotEmpty) {
+          sendRegisterSuccessEmail(_hospitalEmail!);
+        }
         // Show a snackbar indicating successful form submission
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Form submitted successfully'),
             duration: Duration(seconds: 2),
           ),
@@ -465,14 +815,14 @@ class _RegisterPageState extends State<RegisterPage> {
         });
 
         // Add hospital data to the HospitalProvider
-        final hospitalProvider =
-            Provider.of<HospitalProvider>(context, listen: false);
-        hospitalProvider.addHospital(HospitalData(
-          hospitalName: _hospitalName!,
-          hospitalAddress: _hospitalAddress!,
-          hospitalSpecialities: _hospitalSpecialities!,
-          hospitalImageUrl: hospitalDataMap['hospitalImageUrl'],
-        ));
+        // final hospitalProvider =
+        //     Provider.of<HospitalProvider>(context, listen: false);
+        // hospitalProvider.addHospital(HospitalData(
+        //   hospitalName: _hospitalName!,
+        //   hospitalAddress: _hospitalAddress!,
+        //   hospitalSpecialities: _hospitalSpecialities!,
+        //   hospitalImageUrl: hospitalDataMap['hospitalImageUrl'],
+        // ));
 
         // Navigate to the HospitalDashboard screen
         Navigator.push(
@@ -485,7 +835,7 @@ class _RegisterPageState extends State<RegisterPage> {
         print('Error saving data to Cloud Firestore: $e');
         // Show an error message if there's an issue with data saving
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Error saving data. Please try again.'),
             duration: Duration(seconds: 2),
           ),
@@ -493,4 +843,11 @@ class _RegisterPageState extends State<RegisterPage> {
       }
     }
   }
+}
+
+class ChecklistItem {
+  String title;
+  bool isChecked;
+
+  ChecklistItem({required this.title, required this.isChecked});
 }

@@ -45,6 +45,7 @@ dependencies:
   cloud_firestore: ^4.8.4
   firebase_storage: ^11.2.5
   flutter_localization: ^0.1.13
+  google_maps_flutter: ^2.4.0
   intl: ^0.18.0
   http: ^1.1.0
   

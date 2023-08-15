@@ -21,6 +21,10 @@ class _LoginScreenState extends State<LoginScreen> {
   late TextEditingController _emailController;
   late TextEditingController _passwordController;
 
+  bool _isPasswordVisible = false;
+
+  bool _rememberMe = false;
+
   @override
   void initState() {
     super.initState();
@@ -34,6 +38,12 @@ class _LoginScreenState extends State<LoginScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _togglePasswordVisibility() {
+    setState(() {
+      _isPasswordVisible = !_isPasswordVisible;
+    });
   }
 
   Future<void> _signInWithEmailAndPassword() async {
@@ -158,11 +168,11 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               Image.asset(
                 'lib/assests/images/logo.png',
-                width: 180,
+                width: 120,
               ),
               SizedBox(height: 12),
               Text(
-                'Welcome to Mboacare',
+                'Welcome back',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -171,46 +181,147 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               SizedBox(height: 14),
               Text(
-                'Your Health, Simplified!',
+                'Welcome back! Please enter your details.',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: AppColors.signInButtonColor,
                 ),
               ),
-              SizedBox(height: 40),
-              // Email Box
-              SizedBox(
-                width: 350,
-                height: 50,
-                child: TextField(
-                  controller: _emailController,
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    labelStyle: TextStyle(color: AppColors.primaryColor),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppColors.primaryColor),
+              const SizedBox(height: 20),
+              const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 1),
+                    child: Text(
+                      'Email *',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textColor2),
                     ),
+                  )),
+              const SizedBox(height: 10),
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    width: 1.0,
+                    color: AppColors.email,
+                  ),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 1.0),
+                  child: TextField(
+                    controller: _emailController,
+                    decoration: const InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical: 8.0,
+                        horizontal: 10.0,
+                      ),
+                      hintText: 'Enter your email',
+                      labelStyle: TextStyle(color: AppColors.primaryColor),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 4),
+                    child: Text(
+                      'Password *',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textColor2),
+                    ),
+                  )),
+              const SizedBox(height: 10),
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    width: 1.0,
+                    color: AppColors.password,
+                  ),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 1.0),
+                  child: TextField(
+                    controller: _passwordController,
+                    decoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical: 8.0,
+                        horizontal: 10.0,
+                      ),
+                      hintText: 'Enter your password',
+                      labelStyle: TextStyle(color: AppColors.primaryColor),
+                      border: InputBorder.none,
+                      suffixIcon: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isPasswordVisible = !_isPasswordVisible;
+                          });
+                        },
+                        child: Icon(
+                          _isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                          color: AppColors.primaryColor,
+                        ),
+                      ),
+                    ),
+                    obscureText: !_isPasswordVisible,
                   ),
                 ),
               ),
               SizedBox(height: 16),
-              // Password Box
-              SizedBox(
-                width: 350,
-                height: 50,
-                child: TextField(
-                  controller: _passwordController,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    labelStyle: TextStyle(color: AppColors.primaryColor),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppColors.primaryColor),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _rememberMe,
+                        onChanged: (value) {
+                          setState(() {
+                            _rememberMe = value!;
+                          });
+                        },
+                        activeColor: Colors.green,
+                      ),
+                      Text(
+                        "Remember Me",
+                        style: TextStyle(
+                          color: AppColors.textColor2,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      if (_emailController.text.isNotEmpty) {
+                        _sendPasswordResetEmail(_emailController.text.trim());
+                      } else {
+                        _showMessage(
+                            "Please enter your email to reset the password.");
+                      }
+                    },
+                    child: Text(
+                      "Forgot password",
+                      style: TextStyle(
+                        color: AppColors.textColor2,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                  obscureText: true,
-                ),
+                ],
               ),
+
               SizedBox(height: 24),
               // Login with Email Button
               ElevatedButton(
@@ -261,18 +372,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       context, MaterialPageRoute(builder: (_) => SignUpPage()));
                 },
                 child: Text("Don't have an account? Sign up"),
-              ),
-              SizedBox(height: 16),
-              TextButton(
-                onPressed: () {
-                  if (_emailController.text.isNotEmpty) {
-                    _sendPasswordResetEmail(_emailController.text.trim());
-                  } else {
-                    _showMessage(
-                        "Please enter your email to reset the password.");
-                  }
-                },
-                child: Text("Forgot password? Reset here."),
               ),
             ],
           ),

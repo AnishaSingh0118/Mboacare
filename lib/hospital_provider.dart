@@ -27,8 +27,17 @@ class HospitalProvider with ChangeNotifier {
             hospitalName: doc.get('hospitalName') ?? '',
             hospitalAddress: doc.get('hospitalAddress') ?? '',
             hospitalSpecialities: doc.get('hospitalSpecialities') ?? '',
+            hospitalImageUrl: doc.get('hospitalImageUrl') ?? '',
+            hospitalWebsite: doc.get('hospitalWebsite') ?? '',
+            hospitalEmail: doc.get('hospitalEmail') ?? '',
+            hospitalPhone: doc.get('hospitalPhone') ?? '',
+            hospitalBedCapacity: doc.get('hospitalBedCapacity') ?? '',
+            hospitalFacilities: doc.get('hospitalFacilities') ?? '',
+            hospitalEmergencyServices:
+                doc.get('hospitalEmergencyServices') ?? '',
             // Add other fields if needed
           );
+          //print(hospital.hospitalImageUrl);
           hospitals.add(hospital);
         });
         return hospitals;
@@ -52,14 +61,22 @@ class HospitalProvider with ChangeNotifier {
       final specialitiesMatch = hospital.hospitalSpecialities
           .toLowerCase()
           .contains(query.toLowerCase());
-
+      final facilitiesMatch = hospital.hospitalFacilities
+          .toLowerCase()
+          .contains(query.toLowerCase());
       // Check if the hospital matches the selected filter
       final filterMatches = selectedFilter == 'View All' ||
           hospital.hospitalSpecialities
               .toLowerCase()
+              .contains(selectedFilter.toLowerCase()) ||
+          hospital.hospitalFacilities
+              .toLowerCase()
               .contains(selectedFilter.toLowerCase());
 
-      return (nameMatches || addressMatches || specialitiesMatch) &&
+      return (nameMatches ||
+              addressMatches ||
+              specialitiesMatch ||
+              facilitiesMatch) &&
           filterMatches;
     }).toList();
 
@@ -108,7 +125,13 @@ class HospitalProvider with ChangeNotifier {
           hospitalName: doc.get('hospitalName') ?? '',
           hospitalAddress: doc.get('hospitalAddress') ?? '',
           hospitalSpecialities: doc.get('hospitalSpecialities') ?? '',
-
+          hospitalImageUrl: doc.get('hospitalImageUrl') ?? '',
+          hospitalWebsite: doc.get('hospitalWebsite') ?? '',
+          hospitalEmail: doc.get('hospitalEmail') ?? '',
+          hospitalPhone: doc.get('hospitalPhone') ?? '',
+          hospitalBedCapacity: doc.get('hospitalBedCapacity') ?? '',
+          hospitalFacilities: doc.get('hospitalFacilities') ?? '',
+          hospitalEmergencyServices: doc.get('hospitalEmergencyServices') ?? '',
           // Add other fields if needed
         );
         _hospitals.add(hospital);
@@ -137,6 +160,20 @@ class HospitalProvider with ChangeNotifier {
               .toLowerCase()
               .contains(_selectedFilter.toLowerCase()))
           .toList();
+    }
+    notifyListeners();
+  }
+
+  void updateFilteredHospitalsDropdown(List<HospitalData> hospitals) {
+    if (_selectedFilter == 'View All') {
+      _filteredHospitals = hospitals;
+    } else {
+      _filteredHospitals = hospitals
+          .where((hospital) => hospital.hospitalFacilities
+              .toLowerCase()
+              .contains(_selectedFilter.toLowerCase()))
+          .toList();
+      print('Drop : ${_filteredHospitals.length}');
     }
     notifyListeners();
   }

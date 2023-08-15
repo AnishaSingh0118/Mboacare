@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -22,11 +23,40 @@ class _SignUpPageState extends State<SignUpPage> {
       TextEditingController(); // New controller for Name
   TextEditingController _emailController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
+  TextEditingController _confirmPasswordController = TextEditingController();
   String _registrationStatus = '';
+  bool _isPasswordVisible = false;
+  final String documentId =
+      'aeac9fSTIeI6UD0OywSj'; // ID of the document to fetch
+  final String collectionName = 'sendgrid'; // Name of the collection
+  final String fieldName = 'apiKey'; // Name of the field to retrieve
+  String apiKeySG = '';
+
+  @override
+  void initState() {
+    super.initState();
+    fetchApiKey();
+  }
+
+  Future<void> fetchApiKey() async {
+    try {
+      DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+          .collection(collectionName)
+          .doc(documentId)
+          .get();
+      if (documentSnapshot.exists) {
+        apiKeySG = documentSnapshot.get(fieldName);
+        print(apiKeySG);
+      } else {
+        print('Document not found');
+      }
+    } catch (error) {
+      print('Error fetching data: $error');
+    }
+  }
 
   Future<void> sendWelcomeEmail(String recipientEmail) async {
-    const String apiKey =
-        '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';
+    String apiKey = apiKeySG;
     final Uri uri = Uri.https(
       'api.sendgrid.com',
       '/v3/mail/send',
@@ -65,6 +95,16 @@ class _SignUpPageState extends State<SignUpPage> {
 
   void _signUpWithEmailAndPassword() async {
     try {
+      final String password = _passwordController.text;
+      final String confirmPassword = _confirmPasswordController.text;
+
+      if (password != confirmPassword) {
+        setState(() {
+          _registrationStatus = 'Passwords do not match';
+        });
+        return;
+      }
+
       final UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
@@ -81,7 +121,7 @@ class _SignUpPageState extends State<SignUpPage> {
           _registrationStatus = 'Registration successful';
         });
 
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => RegisterPage(),
@@ -93,6 +133,12 @@ class _SignUpPageState extends State<SignUpPage> {
         _registrationStatus = 'Registration failed: ${e.toString()}';
       });
     }
+  }
+
+  void _togglePasswordVisibility() {
+    setState(() {
+      _isPasswordVisible = !_isPasswordVisible;
+    });
   }
 
   Future<void> _signUpWithGoogle() async {
@@ -137,11 +183,11 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sign Up'),
+        title: const Text('Sign Up'),
       ),
       body: Center(
         child: Padding(
-          padding: EdgeInsets.all(50.0),
+          padding: const EdgeInsets.all(30.0),
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -150,9 +196,30 @@ class _SignUpPageState extends State<SignUpPage> {
                   'lib/assests/images/logo.png',
                   width: 125,
                 ),
-                SizedBox(height: 50),
+                SizedBox(height: 10),
+                Text(
+                  ' Create an account',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textColor2,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 4),
+                      child: Text(
+                        'Name *',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textColor2),
+                      ),
+                    )),
+                const SizedBox(height: 10),
                 Container(
-                  width: 320,
+                  width: double.infinity,
                   decoration: BoxDecoration(
                     border: Border.all(
                       width: 1.0,
@@ -160,22 +227,37 @@ class _SignUpPageState extends State<SignUpPage> {
                     ),
                     borderRadius: BorderRadius.circular(8.0),
                   ),
-                  child: TextField(
-                    controller: _nameController,
-                    decoration: InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(
-                        vertical: 8.0,
-                        horizontal: 10.0,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 1.0),
+                    child: TextField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: 8.0,
+                          horizontal: 10.0,
+                        ),
+                        hintText: 'Enter your name',
+                        labelStyle: TextStyle(color: AppColors.primaryColor),
+                        border: InputBorder.none,
                       ),
-                      labelText: 'Name',
-                      labelStyle: TextStyle(color: AppColors.primaryColor),
-                      border: InputBorder.none,
                     ),
                   ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 20),
+                const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 1),
+                      child: Text(
+                        'Email *',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textColor2),
+                      ),
+                    )),
+                const SizedBox(height: 10),
                 Container(
-                  width: 320,
+                  width: double.infinity,
                   decoration: BoxDecoration(
                     border: Border.all(
                       width: 1.0,
@@ -183,22 +265,37 @@ class _SignUpPageState extends State<SignUpPage> {
                     ),
                     borderRadius: BorderRadius.circular(8.0),
                   ),
-                  child: TextField(
-                    controller: _emailController,
-                    decoration: InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(
-                        vertical: 8.0,
-                        horizontal: 10.0,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 1.0),
+                    child: TextField(
+                      controller: _emailController,
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: 8.0,
+                          horizontal: 10.0,
+                        ),
+                        hintText: 'Enter your email',
+                        labelStyle: TextStyle(color: AppColors.primaryColor),
+                        border: InputBorder.none,
                       ),
-                      labelText: 'Email',
-                      labelStyle: TextStyle(color: AppColors.primaryColor),
-                      border: InputBorder.none,
                     ),
                   ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 20),
+                const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 4),
+                      child: Text(
+                        'Password *',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textColor2),
+                      ),
+                    )),
+                const SizedBox(height: 10),
                 Container(
-                  width: 320,
+                  width: double.infinity,
                   decoration: BoxDecoration(
                     border: Border.all(
                       width: 1.0,
@@ -206,21 +303,89 @@ class _SignUpPageState extends State<SignUpPage> {
                     ),
                     borderRadius: BorderRadius.circular(8.0),
                   ),
-                  child: TextField(
-                    controller: _passwordController,
-                    decoration: InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(
-                        vertical: 8.0,
-                        horizontal: 12.0,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 1.0),
+                    child: TextField(
+                      controller: _passwordController,
+                      decoration: InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: 8.0,
+                          horizontal: 10.0,
+                        ),
+                        hintText: 'Enter your password',
+                        labelStyle: TextStyle(color: AppColors.primaryColor),
+                        border: InputBorder.none,
+                        suffixIcon: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _isPasswordVisible = !_isPasswordVisible;
+                            });
+                          },
+                          child: Icon(
+                            _isPasswordVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                            color: AppColors.primaryColor,
+                          ),
+                        ),
                       ),
-                      labelText: 'Password',
-                      labelStyle: TextStyle(color: AppColors.primaryColor),
-                      border: InputBorder.none,
+                      obscureText: !_isPasswordVisible,
                     ),
-                    obscureText: true,
                   ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 20),
+                const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 4),
+                      child: Text(
+                        'Confirm Password *',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textColor2),
+                      ),
+                    )),
+                const SizedBox(height: 10),
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      width: 1.0,
+                      color: AppColors.password,
+                    ),
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 1.0),
+                    child: TextField(
+                      controller: _confirmPasswordController,
+                      decoration: InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: 8.0,
+                          horizontal: 10.0,
+                        ),
+                        hintText: 'Confirm Password',
+                        labelStyle: TextStyle(color: AppColors.primaryColor),
+                        border: InputBorder.none,
+                        suffixIcon: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _isPasswordVisible = !_isPasswordVisible;
+                            });
+                          },
+                          child: Icon(
+                            _isPasswordVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                            color: AppColors.primaryColor,
+                          ),
+                        ),
+                      ),
+                      obscureText: !_isPasswordVisible,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
                 SizedBox(
                   height: 40,
                   width: 320,
@@ -232,7 +397,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    child: Text(
+                    child: const Text(
                       'Register',
                       style: TextStyle(
                         color: Colors.white,
@@ -240,14 +405,14 @@ class _SignUpPageState extends State<SignUpPage> {
                     ),
                   ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 1),
                 Text(
                   _registrationStatus,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.red,
                   ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 1),
                 SizedBox(
                   height: 40,
                   width: 320,
@@ -268,8 +433,8 @@ class _SignUpPageState extends State<SignUpPage> {
                           height: 32,
                           width: 32,
                         ),
-                        SizedBox(width: 8),
-                        Text('Register with Google'),
+                        const SizedBox(width: 4),
+                        const Text('Register with Google'),
                       ],
                     ),
                   ),
