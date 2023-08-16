@@ -823,14 +823,15 @@ class _RegisterPageState extends State<RegisterPage> {
         //   hospitalSpecialities: _hospitalSpecialities!,
         //   hospitalImageUrl: hospitalDataMap['hospitalImageUrl'],
         // ));
-
-        // Navigate to the HospitalDashboard screen
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => HospitalDashboard(),
-          ),
-        );
+        Future.delayed(const Duration(seconds: 1)).then((_) {
+          // Navigate to the HospitalDashboard screen
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HospitalDashboard(),
+            ),
+          );
+        });
       } catch (e) {
         print('Error saving data to Cloud Firestore: $e');
         // Show an error message if there's an issue with data saving
