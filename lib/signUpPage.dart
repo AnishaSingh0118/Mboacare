@@ -26,6 +26,8 @@ class _SignUpPageState extends State<SignUpPage> {
   TextEditingController _confirmPasswordController = TextEditingController();
   String _registrationStatus = '';
   bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
+
   final String documentId =
       'aeac9fSTIeI6UD0OywSj'; // ID of the document to fetch
   final String collectionName = 'sendgrid'; // Name of the collection
@@ -55,7 +57,8 @@ class _SignUpPageState extends State<SignUpPage> {
     }
   }
 
-  Future<void> sendWelcomeEmail(String recipientEmail) async {
+  Future<void> sendWelcomeEmail(
+      String recipientEmail, String recipientName) async {
     String apiKey = apiKeySG;
     final Uri uri = Uri.https(
       'api.sendgrid.com',
@@ -66,14 +69,31 @@ class _SignUpPageState extends State<SignUpPage> {
       'personalizations': [
         {
           'to': [
-            {'email': recipientEmail},
+            {
+              'email': recipientEmail,
+              'name': recipientName
+            }, // Included recipient's name
           ],
           'subject': 'Welcome to Mboacare!',
         },
       ],
       'from': {'email': 'mboacare@gmail.com'},
       'content': [
-        {'type': 'text/plain', 'value': 'Thank you for joining us !'},
+        {
+          'type': 'text/plain',
+          'value': '''
+Dear $recipientName,
+
+Welcome to Mboacare! We're thrilled to have you as part of our community. Your commitment to better healthcare accessibility is appreciated.
+
+Thank you for signing up. We look forward to providing you with a seamless experience as you explore medical facilities and connect with healthcare experts.
+
+If you have any questions or need assistance, feel free to reach out to us anytime. Once again, welcome aboard!
+
+Best regards,
+The Mboacare Team
+        '''
+        },
       ],
     };
 
@@ -115,7 +135,7 @@ class _SignUpPageState extends State<SignUpPage> {
       if (user != null) {
         await user.updateDisplayName(_nameController.text.trim());
 
-        sendWelcomeEmail(_emailController.text);
+        sendWelcomeEmail(_emailController.text, _nameController.text.trim());
 
         setState(() {
           _registrationStatus = 'Registration successful';
@@ -138,6 +158,13 @@ class _SignUpPageState extends State<SignUpPage> {
   void _togglePasswordVisibility() {
     setState(() {
       _isPasswordVisible = !_isPasswordVisible;
+    });
+  }
+
+  void _toggleConfirmPasswordVisibility() {
+    // Add this function
+    setState(() {
+      _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
     });
   }
 
@@ -285,7 +312,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 const Align(
                     alignment: Alignment.centerLeft,
                     child: Padding(
-                      padding: EdgeInsets.only(left: 4),
+                      padding: EdgeInsets.only(left: 4, bottom: 1),
                       child: Text(
                         'Password *',
                         style: TextStyle(
@@ -294,6 +321,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                     )),
                 const SizedBox(height: 10),
+                // Password Field
                 Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
@@ -303,24 +331,34 @@ class _SignUpPageState extends State<SignUpPage> {
                     ),
                     borderRadius: BorderRadius.circular(8.0),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 1.0),
-                    child: TextField(
-                      controller: _passwordController,
-                      decoration: InputDecoration(
-                        contentPadding: EdgeInsets.symmetric(
-                          vertical: 8.0,
-                          horizontal: 10.0,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                          child: TextField(
+                            controller: _passwordController,
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 8.0,
+                              ),
+                              hintText: 'Enter your password',
+                              labelStyle:
+                                  TextStyle(color: AppColors.primaryColor),
+                              border: InputBorder.none,
+                            ),
+                            obscureText: !_isPasswordVisible,
+                          ),
                         ),
-                        hintText: 'Enter your password',
-                        labelStyle: TextStyle(color: AppColors.primaryColor),
-                        border: InputBorder.none,
-                        suffixIcon: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _isPasswordVisible = !_isPasswordVisible;
-                            });
-                          },
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isPasswordVisible = !_isPasswordVisible;
+                          });
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
                           child: Icon(
                             _isPasswordVisible
                                 ? Icons.visibility
@@ -329,15 +367,16 @@ class _SignUpPageState extends State<SignUpPage> {
                           ),
                         ),
                       ),
-                      obscureText: !_isPasswordVisible,
-                    ),
+                    ],
                   ),
                 ),
+
+                // Confirm Password Field
                 const SizedBox(height: 20),
                 const Align(
                     alignment: Alignment.centerLeft,
                     child: Padding(
-                      padding: EdgeInsets.only(left: 4),
+                      padding: EdgeInsets.only(left: 4, bottom: 1),
                       child: Text(
                         'Confirm Password *',
                         style: TextStyle(
@@ -345,6 +384,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             color: AppColors.textColor2),
                       ),
                     )),
+
                 const SizedBox(height: 10),
                 Container(
                   width: double.infinity,
@@ -355,36 +395,47 @@ class _SignUpPageState extends State<SignUpPage> {
                     ),
                     borderRadius: BorderRadius.circular(8.0),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 1.0),
-                    child: TextField(
-                      controller: _confirmPasswordController,
-                      decoration: InputDecoration(
-                        contentPadding: EdgeInsets.symmetric(
-                          vertical: 8.0,
-                          horizontal: 10.0,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                          child: TextField(
+                            controller: _confirmPasswordController,
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 8.0,
+                              ),
+                              hintText: 'Confirm your password',
+                              labelStyle:
+                                  TextStyle(color: AppColors.primaryColor),
+                              border: InputBorder.none,
+                            ),
+                            obscureText: !_isConfirmPasswordVisible,
+                          ),
                         ),
-                        hintText: 'Confirm Password',
-                        labelStyle: TextStyle(color: AppColors.primaryColor),
-                        border: InputBorder.none,
-                        suffixIcon: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _isPasswordVisible = !_isPasswordVisible;
-                            });
-                          },
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isConfirmPasswordVisible =
+                                !_isConfirmPasswordVisible;
+                          });
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
                           child: Icon(
-                            _isPasswordVisible
+                            _isConfirmPasswordVisible
                                 ? Icons.visibility
                                 : Icons.visibility_off,
                             color: AppColors.primaryColor,
                           ),
                         ),
                       ),
-                      obscureText: !_isPasswordVisible,
-                    ),
+                    ],
                   ),
                 ),
+
                 const SizedBox(height: 18),
                 SizedBox(
                   height: 40,

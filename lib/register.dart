@@ -11,6 +11,7 @@ import 'hospital_provider.dart';
 import 'hospital_model.dart';
 import 'package:http/http.dart' as http;
 import 'hospitaldashboard.dart';
+import 'dashboard.dart';
 
 class RegisterPage extends StatefulWidget {
   @override
@@ -61,7 +62,8 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
-  Future<void> sendRegisterSuccessEmail(String recipientEmail) async {
+  Future<void> sendRegisterSuccessEmail(
+      String recipientEmail, String recipientName) async {
     String apiKey = apiKeySG;
     final Uri uri = Uri.https(
       'api.sendgrid.com',
@@ -72,17 +74,32 @@ class _RegisterPageState extends State<RegisterPage> {
       'personalizations': [
         {
           'to': [
-            {'email': recipientEmail},
+            {
+              'email': recipientEmail,
+              'name': recipientName
+            }, // Included recipient's name
           ],
-          'subject': 'Welcome to Mboacare!',
+          'subject': 'Thank You for Registering with Mboacare!',
         },
       ],
       'from': {'email': 'mboacare@gmail.com'},
       'content': [
         {
           'type': 'text/plain',
-          'value':
-              'Thank you for registering your hospital! We will get back in touch after review.'
+          'value': '''
+Dear $recipientName,
+
+Thank you for registering your facility with Mboacare! We have received your details and appreciate your interest in joining our platform.
+
+Our team is currently reviewing the information you've provided to ensure that it aligns with our quality standards. We're committed to creating a network of reliable medical facilities that users can trust. As soon as the review process is complete, we will notify you about the status of your registration.
+
+We appreciate your patience during this process. If you have any questions or need further assistance, please don't hesitate to reach out to us at [contact email or phone number]. We look forward to potentially featuring your hospital on Mboacare and expanding our network of healthcare providers.
+
+Thank you once again for considering Mboacare.
+
+Best regards,
+The Mboacare Team
+        '''
         },
       ],
     };
@@ -212,6 +229,18 @@ class _RegisterPageState extends State<RegisterPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Hospital Sign Up'),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            // Navigate back to the dashboard page
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                  builder: (context) => DashboardScreen(
+                        userName: '',
+                      )),
+            );
+          },
+        ),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -798,7 +827,7 @@ class _RegisterPageState extends State<RegisterPage> {
           await _hospitalsRef.add(hospitalDataMap);
         }
         if (_hospitalEmail!.isNotEmpty) {
-          sendRegisterSuccessEmail(_hospitalEmail!);
+          sendRegisterSuccessEmail(_hospitalEmail!, _hospitalName!);
         }
         // Show a snackbar indicating successful form submission
         ScaffoldMessenger.of(context).showSnackBar(
