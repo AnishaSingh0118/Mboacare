@@ -5,6 +5,8 @@ This repository is dedicated to tracking the progress of our project for the int
 # mboacare
 The app we are designing is named "**mboacare.**" This name is derived from a combination of "Mboalab," which is the name of the organization we are interning for, and "care," representing the focus of the app on medical facilities and healthcare services.
 
+**Project's Tagline:** ""Your health, Simplified!"
+
 # Project's Aim:
 
 ## Create a platform to link-up medical facilities globally:
@@ -15,15 +17,50 @@ It's a game-changer in terms of usability and convenience. Just a few clicks and
 
 But here's the best part: our app goes beyond the boundaries of a single hospital or location. We are focused on providing a global healthcare experience. You can explore healthcare facilities from different parts of the world, compare their services, and make informed decisions. Whether you are planning a trip abroad or searching for the best healthcare options locally, our app has got you covered. And it's not just for patients! Healthcare facilities can also register and showcase their services on our platform, giving them the opportunity to reach a global audience.
 
+
 # Progress so far:
 
-1. Splash Screen:  Implemented the initial screen that appears upon app launch.
-2. Login Screen: Added authentication functionality, including the option to log in with Google accounts.
-3. Registration Screen: We have successfully implemented the functionality to enable users to create new accounts.
+**Completed Milestones:**
+1. Implemented the splash screen for a smooth app launch.
+2. Enabled user authentication via Google accounts.
+3. Created registration functionality for account creation.
+4. Designed and developed the main dashboard with search, notifications, and filter tabs.
+5. Crafted comprehensive hospital profiles with contact details, services, specialties, and reviews.
+6. Integrated social media links to follow Mboalab on LinkedIn.
 
-We will continue updating this repository as we make further progress.
+**Recent Enhancements:**
+1. Expanded the login page with new fields: Name, Username, Email Address, Password, and Confirm Password.
+2. Added Gmail authentication to verify email addresses securely.
+3. Activated the search bar functionality for easy navigation.
+4. Working on user prompts to encourage registration and contact interactions.
+5. Ensured the app's design aligns perfectly with the Figma prototype.
+6. Thoroughly tested all existing features and shared screenshots.
 
+**Extra Features:**
+- We used a third-party API service (SendGrid) to send personalized emails to both users and hospitals. Welcome emails for successful user registrations and validation emails for hospitals post-registration. 
+- We've incorporated Firebase authentication, making it easy for users to log in with email and Google accounts. Our app also utilizes additional Firebase Authentication features such as email verification and password reset for users' convenience.
+- We chose Firebase Cloud Firestore to effectively manage our database. This helped us easily create, read, update, and delete data.
+- We also made use of Firebase Storage, a service in the cloud, to safely store and retrieve user-uploaded content, such as pictures, videos, and files.
 
+# **What's Ahead: Future Features:**
+**Anisha's suggestions:**
+- AI recommendations: Personalized hospital suggestions on the dashboard.
+- Bookmark feature: Save and organize facilities on hospital details page for easy access.
+- Dark mode: Enable dark mode in settings.
+- Track history: Save booked appointment records.
+- Refer: Share users' medical history.
+- Geolocation: Search and view medical facilities, get directions based on location.(Google Map)
+
+**Deborah's suggestions:**
+- Telemedicine Integration: Incorporate telemedicine capabilities, allowing users to have virtual consultations with doctors.
+- Real-Time Availability: Display real-time availability of appointments, allowing users to book slots instantly.
+- Ratings and Reviews: Implement a robust rating and review system for users to share their experiences and help others make informed decisions.
+- Multilingual Support: Offer language options for users to access the app in their preferred language.
+- Health Tips and Articles: Provide a section with informative articles and health tips related to various medical conditions and wellness.
+- Community Forum: Create a platform for users to engage in discussions, ask questions, and share healthcare-related information.
+
+*"Our progress is on track, and the collaboration between design and development is really paying off.*
+**Moreover, we've successfully wrapped up the basic MVP, and achieved our Outreachy's internship milestone. Additionally, we've provided suggestions for future engagement, as the project remains open for collaborations. We're excited to welcome additional contributions, let's support open source spirit. ✌"**
 
 # Project Contributors:
 
