@@ -132,6 +132,7 @@ class DashboardContent extends StatelessWidget {
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Inter',
+                      color: AppColors.textColor2,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -140,6 +141,7 @@ class DashboardContent extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontFamily: 'Inter',
+                      color: AppColors.textColor2,
                     ),
                     textAlign: TextAlign.center,
                   ),
