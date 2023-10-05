@@ -43,6 +43,7 @@ dependencies:
   file_picker: ^4.0.0
   provider: ^5.0.0-nullsafety.5
   cloud_firestore: ^4.8.4
+  flutter_feather_icons: ^2.0.0+1
   firebase_storage: ^11.2.5
   flutter_localization: ^0.1.13
   google_maps_flutter: ^2.4.0

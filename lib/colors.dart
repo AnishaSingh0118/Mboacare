@@ -14,4 +14,6 @@ class AppColors {
   static const Color cardbg = Color(0xFF106517);
   static const Color registerCard = Color(0xFFECFDED);
   static const Color textColor2 = Color(0xFF106517);
+  static const Color lightGreen = Color(0XFFecfded);
+  static const Color green = Color(0XFFA5D6A7);
 }
