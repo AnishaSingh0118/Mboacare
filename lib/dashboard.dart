@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:mboacare/login.dart';
 import 'package:mboacare/register.dart';
 import 'colors.dart';
@@ -82,26 +83,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
         title: Text(_screenTitles[_currentIndex]),
       ),
       body: _screens[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: _onTabTapped,
-        selectedItemColor: AppColors.buttonColor,
-        unselectedItemColor: AppColors.navbar,
-        items: [
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+      bottomNavigationBar: NavigationBar(
+        indicatorColor: AppColors.green,
+        backgroundColor: AppColors.lightGreen,
+        height: 65,
+        labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
+        selectedIndex: _currentIndex,
+        onDestinationSelected: _onTabTapped,
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(
+              FeatherIcons.home,
+              size: 29.0,
+            ),
             label: 'Home',
           ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.local_hospital),
-            label: 'Hospital Dashbord',
+          NavigationDestination(
+            icon: Icon(
+              Icons.business_outlined,
+              size: 29.0,
+            ),
+            label: 'Hospitals',
           ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
+          NavigationDestination(
+            icon: Icon(
+              FeatherIcons.settings,
+              size: 29.0,
+            ),
             label: 'Settings',
           ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+          NavigationDestination(
+            icon: Icon(
+              Icons.person_outline_rounded,
+              size: 29.0,
+            ),
             label: 'Profile',
           ),
         ],
