@@ -11,6 +11,7 @@ class HospitalDetailsPage extends StatelessWidget {
   String phone = 'Phone';
   String address = 'Address';
 
+
   Future<void> _launchURL(String url) async {
     print('Launching URL: $url');
 
@@ -65,17 +66,17 @@ class HospitalDetailsPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(15.0),
                           image: hospital.hospitalImageUrl != ''
                               ? DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: NetworkImage(
-                                    hospital.hospitalImageUrl,
-                                  ),
-                                )
+                            fit: BoxFit.cover,
+                            image: NetworkImage(
+                              hospital.hospitalImageUrl,
+                            ),
+                          )
                               : const DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: AssetImage(
-                                    'lib/assests/images/placeholder_image.png',
-                                  ),
-                                )),
+                            fit: BoxFit.cover,
+                            image: AssetImage(
+                              'lib/assests/images/placeholder_image.png',
+                            ),
+                          )),
                     ),
                   ),
                   Positioned(
@@ -85,33 +86,33 @@ class HospitalDetailsPage extends StatelessWidget {
                         onTap: () => _launchURL(hospital.hospitalWebsite!),
                         child: hospital.hospitalWebsite != ''
                             ? Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  color: AppColors.text,
-                                ),
-                                padding: const EdgeInsets.all(3),
-                                height: 40,
-                                width: 150,
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    // Icon(
-                                    //   Icons.language_outlined,
-                                    //   color: Colors.white,
-                                    // ),
-                                    // SizedBox(
-                                    //   width: 10,
-                                    // ),
-                                    Text(
-                                      'Visit Website',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  ],
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            color: AppColors.text,
+                          ),
+                          padding: const EdgeInsets.all(3),
+                          height: 40,
+                          width: 150,
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // Icon(
+                              //   Icons.language_outlined,
+                              //   color: Colors.white,
+                              // ),
+                              // SizedBox(
+                              //   width: 10,
+                              // ),
+                              Text(
+                                'Visit Website',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
                                 ),
                               )
+                            ],
+                          ),
+                        )
                             : Container()),
                   )
                 ],
@@ -145,20 +146,26 @@ class HospitalDetailsPage extends StatelessWidget {
                   )),
               const SizedBox(height: 10),
               // Email Box
-              SizedBox(
-                width: 350,
-                height: 50,
-                child: TextField(
-                  enabled: false,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.email_outlined),
-                    prefixIconColor: AppColors.text,
-                    hintText: email,
-                    hintStyle: const TextStyle(color: AppColors.text),
-                    labelStyle: const TextStyle(color: AppColors.primaryColor),
-                    border: const OutlineInputBorder(
-                      borderSide:
-                          BorderSide(color: AppColors.primaryColor, width: 2),
+              InkWell(
+                onTap: (){
+                  final Uri mail = Uri(path: email, scheme: 'mailto');
+                  url_launcher.launchUrl(mail);
+                },
+                child: SizedBox(
+                  width: 350,
+                  height: 50,
+                  child: TextField(
+                    enabled: false,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.email_outlined),
+                      prefixIconColor: AppColors.text,
+                      hintText: email,
+                      hintStyle: const TextStyle(color: AppColors.text),
+                      labelStyle: const TextStyle(color: AppColors.primaryColor),
+                      border: const OutlineInputBorder(
+                        borderSide:
+                        BorderSide(color: AppColors.primaryColor, width: 2),
+                      ),
                     ),
                   ),
                 ),
@@ -180,20 +187,28 @@ class HospitalDetailsPage extends StatelessWidget {
                   )),
               const SizedBox(height: 10),
               // Phone Box
-              SizedBox(
-                width: 350,
-                height: 50,
-                child: TextField(
-                  enabled: false,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.phone),
-                    prefixIconColor: AppColors.text,
-                    hintText: phone,
-                    hintStyle: const TextStyle(color: AppColors.text),
-                    labelStyle: const TextStyle(color: AppColors.primaryColor),
-                    border: const OutlineInputBorder(
-                      borderSide:
-                          BorderSide(color: AppColors.primaryColor, width: 2),
+              InkWell(
+                onTap: ()async{
+                  final Uri tel = Uri(scheme:'tel', path: phone);
+                  if(await url_launcher.canLaunchUrl(tel)){
+                    await url_launcher.launchUrl(tel);
+                  }
+                },
+                child: SizedBox(
+                  width: 350,
+                  height: 50,
+                  child: TextField(
+                    enabled: false,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.phone),
+                      prefixIconColor: AppColors.text,
+                      hintText: phone,
+                      hintStyle: const TextStyle(color: AppColors.text),
+                      labelStyle: const TextStyle(color: AppColors.primaryColor),
+                      border: const OutlineInputBorder(
+                        borderSide:
+                        BorderSide(color: AppColors.primaryColor, width: 2),
+                      ),
                     ),
                   ),
                 ),
@@ -215,20 +230,33 @@ class HospitalDetailsPage extends StatelessWidget {
                   )),
               const SizedBox(height: 10),
               // Address Box
-              SizedBox(
-                width: 350,
-                height: 50,
-                child: TextField(
-                  enabled: false,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.location_on_outlined),
-                    prefixIconColor: AppColors.text,
-                    hintText: address,
-                    hintStyle: const TextStyle(color: AppColors.text),
-                    labelStyle: const TextStyle(color: AppColors.primaryColor),
-                    border: const OutlineInputBorder(
-                      borderSide:
-                          BorderSide(color: AppColors.primaryColor, width: 2),
+              InkWell(
+                onTap: ()async{
+
+                  String query = Uri.encodeComponent(address);
+                  final Uri mapAddress = Uri.parse("https://www.google.com/maps/search/?api=1&query=$query");
+                  if( await url_launcher.canLaunchUrl(mapAddress)){
+                    await url_launcher.launchUrl(mapAddress);
+                  }
+                  // else if (await url_launcher.canLaunchUrl(mapAddress)) {
+                  // await url_launcher.launchUrl(mapAddress, mode:url_launcher.LaunchMode.externalApplication);
+                  // }
+                },
+                child: SizedBox(
+                  width: 350,
+                  height: 50,
+                  child: TextField(
+                    enabled: false,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.location_on_outlined),
+                      prefixIconColor: AppColors.text,
+                      hintText: address,
+                      hintStyle: const TextStyle(color: AppColors.text),
+                      labelStyle: const TextStyle(color: AppColors.primaryColor),
+                      border: const OutlineInputBorder(
+                        borderSide:
+                        BorderSide(color: AppColors.primaryColor, width: 2),
+                      ),
                     ),
                   ),
                 ),
@@ -300,11 +328,11 @@ class HospitalDetailsPage extends StatelessWidget {
                   padding: const EdgeInsets.all(5.0),
                   child: facilities?.length != 0
                       ? Wrap(
-                          runSpacing: 5,
-                          spacing: 5,
-                          children: facilities!.map((item) {
-                            return ChipWidget(item);
-                          }).toList())
+                      runSpacing: 5,
+                      spacing: 5,
+                      children: facilities!.map((item) {
+                        return ChipWidget(item);
+                      }).toList())
                       : Container()),
               const SizedBox(
                 height: 10,
@@ -328,11 +356,11 @@ class HospitalDetailsPage extends StatelessWidget {
                   padding: const EdgeInsets.all(5.0),
                   child: emergency?.length != 0
                       ? Wrap(
-                          runSpacing: 5,
-                          spacing: 5,
-                          children: emergency!.map((item) {
-                            return ChipWidget(item);
-                          }).toList())
+                      runSpacing: 5,
+                      spacing: 5,
+                      children: emergency!.map((item) {
+                        return ChipWidget(item);
+                      }).toList())
                       : Container()),
               const SizedBox(
                 height: 10,
@@ -354,7 +382,7 @@ class HospitalDetailsPage extends StatelessWidget {
               ),
               Padding(
                 padding:
-                    const EdgeInsets.symmetric(vertical: 5, horizontal: 35),
+                const EdgeInsets.symmetric(vertical: 5, horizontal: 35),
                 child: Align(
                     alignment: Alignment.centerLeft,
                     child: ChipWidget(bedCapacity ?? '')),
