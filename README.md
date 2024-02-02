@@ -21,12 +21,11 @@ https://github.com/AnishaSingh0118/Mboacare/assets/76876709/c706f898-a63a-41bb-a
 
 # These are the designed screens using Figma, and here's the link to access the design:
 
-[Figma Link]:
 https://www.figma.com/file/EelhjKyxMfagDt9NuN0pZQ/Mboacare?type=design&fuid=1220698825757128894
 
 # Screens:
 
-![Screenshot_2024-02-02-19-14-29-183_com android chrome](https://github.com/AnishaSingh0118/Mboacare/assets/76876709/b4b7110a-da72-44e2-8632-7cb32349c969)
+![IMG_20240202_191944](https://github.com/AnishaSingh0118/Mboacare/assets/76876709/29a3eb72-6c9e-4c12-a8c0-c703516a70e1)
 
 
 
