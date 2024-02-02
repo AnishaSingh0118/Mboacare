@@ -5,6 +5,15 @@ This repository is dedicated to tracking the progress of our project for the int
 # mboacare
 The app we are designing is named "**mboacare.**" This name is derived from a combination of "Mboalab," which is the name of the organization we are interning for, and "care," representing the focus of the app on medical facilities and healthcare services.
 
+# Refer to the documentation for instructions on setting up the project.
+
+**Link:** https://docs.google.com/document/d/1JEEX4giBdymxaLGo2tIRe2MqqcDQa6TRpK8UBs5pwug/edit?usp=drivesdk
+
+# Demo Video:
+
+https://github.com/AnishaSingh0118/Mboacare/assets/76876709/c706f898-a63a-41bb-a101-2f2d65f18365
+
+
 **Project's Tagline:** ""Your health, Simplified!"
 
 # Project's Aim:
