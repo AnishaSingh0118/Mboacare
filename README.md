@@ -14,7 +14,7 @@ The app we are designing is named "**mboacare.**" This name is derived from a co
 https://github.com/AnishaSingh0118/Mboacare/assets/76876709/c706f898-a63a-41bb-a101-2f2d65f18365
 
 
-**Project's Tagline:** ""Your health, Simplified!"
+# Project's Tagline: "Your health, Simplified!"
 
 # Project's Aim:
 
